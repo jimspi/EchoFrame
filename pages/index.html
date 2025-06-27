@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Meeting Memory Inbox</title>
+</head>
+<body>
+  <h1>EchoFrame Lite</h1>
+  <p>Paste your meeting notes or transcript:</p>
+  <textarea id="transcript" rows="10" cols="50"></textarea><br>
+  <button onclick="submitTranscript()">Submit</button>
+  <p id="result"></p>
+
+  <script>
+    async function submitTranscript() {
+      const input = document.getElementById('transcript').value;
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ transcript: input })
+      });
+      const data = await res.json();
+      document.getElementById('result').innerText = data.summary;
+    }
+  </script>
+</body>
+</html>
