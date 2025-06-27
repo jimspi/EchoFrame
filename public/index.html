@@ -13,14 +13,27 @@
   <script>
     async function submitTranscript() {
       const input = document.getElementById('transcript').value;
-      const res = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ transcript: input })
-      });
-      const data = await res.json();
-      document.getElementById('result').innerText = data.summary;
+      document.getElementById('result').innerText = "Analyzing...";
+
+      try {
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transcript: input })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.summary) {
+          document.getElementById('result').innerText = data.summary;
+        } else {
+          document.getElementById('result').innerText = "No summary returned.";
+        }
+      } catch (err) {
+        document.getElementById('result').innerText = "Server error or invalid response.";
+      }
     }
   </script>
 </body>
 </html>
+
