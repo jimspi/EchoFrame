@@ -1,39 +1,147 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Meeting Memory Inbox</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EchoFrame Lite</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #e0eafc, #cfdef3);
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      width: 90%;
+      max-width: 700px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #1a1a1a;
+    }
+    textarea {
+      width: 100%;
+      padding: 1rem;
+      font-size: 1rem;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      margin-bottom: 1rem;
+      resize: vertical;
+      min-height: 150px;
+    }
+    button {
+      background-color: #0077ff;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #005bd1;
+    }
+    #spinner {
+      display: none;
+      margin: 1rem auto;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #0077ff;
+      animation: rotate 1s linear infinite;
+    }
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    #result {
+      margin-top: 1.5rem;
+      text-align: left;
+      background: #f9f9f9;
+      padding: 1rem;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      white-space: pre-wrap;
+      opacity: 0;
+      transition: opacity 0.6s ease-in-out;
+    }
+    #result.visible {
+      opacity: 1;
+    }
+    @media (max-width: 600px) {
+      h1 { font-size: 1.5rem; }
+      button { width: 100%; }
+    }
+  </style>
 </head>
 <body>
-  <h1>EchoFrame Lite</h1>
-  <p>Paste your meeting notes or transcript:</p>
-  <textarea id="transcript" rows="10" cols="50"></textarea><br>
-  <button onclick="submitTranscript()">Submit</button>
-  <p id="result"></p>
-
+  <div class="container">
+    <h1>EchoFrame</h1>
+    <p style="margin-top: -0.5rem; font-size: 1.1rem; color: #555;">Summarize anything instantly with AI. Just paste, click, and get action items.</p>
+    <textarea id="transcript" placeholder="Paste your meeting notes or transcript here..."></textarea>
+    <button onclick="submitTranscript()">Generate Summary</button>
+    <div id="spinner">E</div>
+    <div id="result"></div>
+  </div>
   <script>
+    let spinnerInterval;
+    function startSpinner() {
+      const spinner = document.getElementById('spinner');
+      let chars = ['E', 'F'];
+      let i = 0;
+      spinner.style.display = 'block';
+      spinner.textContent = chars[i];
+      spinnerInterval = setInterval(() => {
+        i = (i + 1) % chars.length;
+        spinner.textContent = chars[i];
+      }, 400);
+    }
+    function stopSpinner() {
+      clearInterval(spinnerInterval);
+      document.getElementById('spinner').style.display = 'none';
+    }
     async function submitTranscript() {
       const input = document.getElementById('transcript').value;
-      document.getElementById('result').innerText = "Analyzing...";
-
+      const resultBox = document.getElementById('result');
+      resultBox.classList.remove('visible');
+      resultBox.innerText = "";
+      startSpinner();
       try {
         const res = await fetch('/api/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ transcript: input })
         });
-
         const data = await res.json();
-
+        stopSpinner();
         if (res.ok && data.summary) {
-          document.getElementById('result').innerText = data.summary;
+          resultBox.innerText = data.summary;
+          resultBox.classList.add('visible');
         } else {
-          document.getElementById('result').innerText = "No summary returned.";
+          resultBox.innerText = "No summary returned.";
+          resultBox.classList.add('visible');
         }
       } catch (err) {
-        document.getElementById('result').innerText = "Server error or invalid response.";
+        stopSpinner();
+        resultBox.innerText = "Server error or invalid response.";
+        resultBox.classList.add('visible');
       }
     }
   </script>
 </body>
 </html>
+
+
 
